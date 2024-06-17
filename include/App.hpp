@@ -35,7 +35,7 @@ struct App {
 
     int _width {};
     int _height {};
-    double _previousTime {};
+    double _previousTime{};
     float _viewSize {};
 
     // Add your variables here
@@ -46,11 +46,15 @@ struct App {
 
 // Partie MAP
 
+    MAP MAP1;
+    Ennemi Elisabeth;
+    Ennemi Colin;
+
     bool JeuStart{0};
 
     // uMap map
     std::unordered_map<typeCase, GLuint> tiles_textures {};
-    img::Image map10x10 {img::load(make_absolute_path("images/Tuiles/map10x10.png", true), 3, false)};
+    std::unordered_map<typeChemin, GLuint> paths_textures {};
     img::Image map1080x1080 {img::load(make_absolute_path("images/Tuiles/map_design2_v2.png", true), 3, false)};
 
 
@@ -69,9 +73,9 @@ struct App {
     // Compte combien de tours ont été placées
     int CompteurPlacementTour{0};
 
-    // Transforme les coordonnées brutes en coordonnées dans le carré 1080x1080
-    int xposTourVerif{};
-    int yposTourVerif{};
+    // Transforme les coordonnées brutes en coordonnées dans le carré 9x9
+    int sourisX{};
+    int sourisY{};
 
     // Coordonnées Tour 1
     int xposTour1{};

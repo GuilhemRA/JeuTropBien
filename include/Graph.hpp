@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <utility>
 
-
 namespace Graph
 {
     struct WeightedGraphEdge
