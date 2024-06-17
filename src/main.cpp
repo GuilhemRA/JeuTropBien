@@ -90,11 +90,11 @@ int main() {
         // Get time (in second) at loop beginning
 		double startTime { glfwGetTime() };
 
-        app.update();
+        // app.update();
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
-
+        app.render();
         // Poll for and process events
         glfwPollEvents();
 
