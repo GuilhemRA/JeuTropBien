@@ -14,10 +14,11 @@ enum class typeTour
 
 struct Tour
 {
-    typeTour typeDeTour{};
+    bool tourPlacee = false;
+    float degats{0};
+    int x{};
+    int y{};
 
+    typeTour typeDeTour{typeTour::archer};
+    GLuint texture;
 };
-
-int calibrageTour(int xpos);
-void dessineZoneDegats(float r, float g, float b);
-void draw_square(int r, int g, int b);

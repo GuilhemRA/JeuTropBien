@@ -1,12 +1,14 @@
-#include "Map.hpp"
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include "Operator.hpp"
 #include "GLHelpers.hpp"
+#include "Map.hpp"
+#include "Tours.hpp"
+
+struct Tour;
 
 void MAP::determineCouleursCase() {
-    // std::cout << this->imageMap.data_size() << std::endl;
     Case pixel;
     for (size_t i = 0; i < this->imageMap.data_size(); i += this->imageMap.channels_count()) {
         pixel.position.x = i / this->imageMap.channels_count() % this->nombreDePixelEnLigne;
@@ -14,7 +16,6 @@ void MAP::determineCouleursCase() {
         pixel.couleur = {(int)*(this->imageMap.data() + i), (int)*(this->imageMap.data() + i + 1), (int)*(this->imageMap.data() + i + 2)};
         this->ListeCase.push_back(pixel);
     }
-    // std::cout << this->ListeCase.size() << std::endl;
 }
 
 Couleur MAP::couleurITD(std::string const &type) {
@@ -123,7 +124,6 @@ void MAP::recupereNoeudsITD() {
         std::exit(EXIT_FAILURE);
     }
     this->ListeNoeud = NOEUDS;
-    std::cout << NOEUDS.size() << std::endl;
 }
 
 void MAP::creationGraph() {
@@ -258,140 +258,3 @@ void MAP::dessineMap(std::unordered_map<typeCase, GLuint> &tiles_textures, std::
             draw_quad_with_texture(pixel.position.x, pixel.position.y, tiles_textures[pixel.typeDeCase], *this);
     }
 }
-
-
-
-//     std::vector<Case> VectCaseMap{};
-//     VectCaseMap = ChargeVectMap(&map10x10);
-
-//     int posDansVectCaseMap{0};
-//     for(int i{0}; i<10; i++) {
-//         for(int j{0}; j<10; j++) {
-//             // rendu case 54x54
-//             glPushMatrix();
-//             // décalage de case (0->9)
-//             glTranslatef(0.2f*i, -0.2f*j, 0.f);
-//             if(VectCaseMap[posDansVectCaseMap].typeDeCase == typeCase::chemin) {
-//                 // Si la case de gauche et la case de droite sont des chemins
-//                 if(VectCaseMap[posDansVectCaseMap-10].typeDeCase == typeCase::chemin && VectCaseMap[posDansVectCaseMap+10].typeDeCase == typeCase::chemin) {
-//                     // Si haut chemin
-//                     if(VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin) {
-//                             draw_quad_with_texture(tiles_textures[typeCase::chemin_T_inverse]);
-//                     }
-//                     // Si bas chemin
-//                     else if(VectCaseMap[posDansVectCaseMap+1].typeDeCase == typeCase::chemin) {
-//                             draw_quad_with_texture(tiles_textures[typeCase::chemin_T]);
-//                     }
-//                     else {
-//                         draw_quad_with_texture(tiles_textures[typeCase::chemin_horizontal]);
-//                     }
-//                 }
-//                 else if(VectCaseMap[posDansVectCaseMap-10].typeDeCase == typeCase::chemin) {
-//                     if(VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin && VectCaseMap[posDansVectCaseMap+1].typeDeCase == typeCase::chemin) {
-//                         draw_quad_with_texture(tiles_textures[typeCase::chemin_T_gauche]);
-//                     }
-//                     else if(VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin) {
-//                         draw_quad_with_texture(tiles_textures[typeCase::chemin_haut_gauche]);
-//                     }
-//                     else {
-//                         draw_quad_with_texture(tiles_textures[typeCase::chemin_gauche_bas]);
-//                     }
-//                 }
-//                 else if(VectCaseMap[posDansVectCaseMap+10].typeDeCase == typeCase::chemin) {
-//                     if(VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin || VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin_depart) {
-//                         draw_quad_with_texture(tiles_textures[typeCase::chemin_haut_droite]);
-//                     }
-//                     else {
-//                         draw_quad_with_texture(tiles_textures[typeCase::chemin_droite_bas]);
-//                     }
-//                 }
-//                 else {
-//                     draw_quad_with_texture(tiles_textures[typeCase::chemin_vertical]);
-//                 }
-//             }
-//             else if(VectCaseMap[posDansVectCaseMap].typeDeCase == typeCase::nonchemin) {
-//                 int numero = (i*j)%3;
-//                 if(numero==0) {
-//                     draw_quad_with_texture(tiles_textures[typeCase::nonchemin_1]);
-//                 }
-//                 if(numero==1) {
-//                     draw_quad_with_texture(tiles_textures[typeCase::nonchemin_2]);
-//                 }
-//                 if(numero==2) {
-//                     draw_quad_with_texture(tiles_textures[typeCase::nonchemin_3]);
-//                 }                
-//             }
-//             else {
-//             draw_quad_with_texture(tiles_textures[VectCaseMap[posDansVectCaseMap].typeDeCase]);
-//             }
-//             glPopMatrix();
-//             posDansVectCaseMap++;
-//         }
-//     }
-// }
-
-    // std::vector<Case> ChargeVectMap(img::Image* image) {
-    //     std::vector<Case> VectCaseMap{};
-
-    //     const uint8_t* data { image->data() };
-    //     const unsigned int width { image->width() };
-    //     const unsigned int height { image->height() };
-
-    //     for(unsigned int i{0}; i<10; i++) {
-    //         for(unsigned int j{0}; j<10; j++) {
-    //             uint8_t r = data[(i+width*j)*3+0];
-    //             uint8_t g = data[(i+width*j)*3+1];
-    //             uint8_t b = data[(i+width*j)*3+2];
-    //             Case C;
-
-    //             C.R = r;
-    //             C.G = g;
-    //             C.B = b;
-
-    //             if(r == 0 && g == 0 && b == 0) {
-    //                     C.typeDeCase = typeCase::nonchemin;
-    //             }
-    //             if(r == 0 && g != 0 && b == 0) {
-    //                 C.typeDeCase = typeCase::emplacement_tour;
-    //             }
-    //             if(r != 0 && g != 0 && b != 0) {
-    //                 C.typeDeCase = typeCase::chemin;
-    //             }
-    //             if(r != 0 && g == 0 && b == 0) {
-    //                 C.typeDeCase = typeCase::chemin_depart;
-    //             }
-    //             if(r == 0 && g == 0 && b != 0) {
-    //                 C.typeDeCase = typeCase::chemin_arrivee;
-    //             }
-
-    //             VectCaseMap.push_back(C);
-            
-    //         }
-    //     }
-
-    //     return VectCaseMap;
-
-    // }
-
-// std::vector<Case> VerifPlacementTourVectMap(img::Image* image) {
-//     std::vector<Case> VectPixelMap{};
-
-//     const uint8_t* data { image->data() };
-//     const unsigned int width { image->width() };
-//     const unsigned int height { image->height() };
-
-//     for(unsigned int i{0}; i<width; i++) {
-//         for(unsigned int j{0}; j<height; j++) {
-//             uint8_t r = data[(i+width*j)*3+0];
-//             uint8_t g = data[(i+width*j)*3+1];
-//             uint8_t b = data[(i+width*j)*3+2];
-//             Case P;
-//             P.R = r;
-//             P.G = g;
-//             P.B = b;
-//             VectPixelMap.push_back(P);
-//         }
-//     }
-
-//     return VectPixelMap;
-// }

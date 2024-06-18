@@ -7,6 +7,7 @@
 
 #include "utils.hpp"
 #include "Graph.hpp"
+#include "Tours.hpp"
 
 struct Position
 {
@@ -100,7 +101,5 @@ struct MAP
     void plusCourtChemin();
 
     void dessineMap(std::unordered_map<typeCase, GLuint> &tiles_textures, std::unordered_map<typeChemin, GLuint> &paths_textures);
-};
 
-std::vector<Case> ChargeVectMap(img::Image *image);
-std::vector<Case> VerifPlacementTourVectMap(img::Image* image);
+};

@@ -3,8 +3,33 @@
 #include "Map.hpp"
 #include "GLHelpers.hpp"
 
-void Ennemi::SiDansZoneDegats() {
+void Ennemi::siDansZoneDegats(int x, int y, std::vector<int> VectPosTour) {
+    int xPosCase{0};
+    int yPosCase{0};
+    int xZoneGauche{0};
+    int xZoneDroite{0};
+    int yZoneBas{0};
+    int yZoneHaut{0};
 
+    for(int count{0}; count<=4; count+=2) {
+
+        xPosCase = VectPosTour[count];
+        yPosCase = VectPosTour[count+1];
+
+        xZoneGauche = xPosCase - 1;
+        xZoneDroite = xPosCase + 1;
+
+        yZoneBas = yPosCase - 1;
+        yZoneHaut = yPosCase + 1;
+
+        for(int i = xZoneGauche; i <= xZoneDroite; i++) {
+            for(int j = yZoneBas; j <= yZoneHaut; j++) {
+                if(x==i && y==j) {
+                    this->PdVEnnemi-=.1f; // Dégâts similaires pour chaque Tour
+                }
+            }
+        }
+    }
 }
 
 void Ennemi::deplacement(std::vector<std::vector<Noeud>> &ListePlusCourtChemin, MAP &Map)

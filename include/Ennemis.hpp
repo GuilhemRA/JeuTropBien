@@ -20,7 +20,7 @@ struct Ennemi
     Position position{0,0};
 
     // Détermine si l'ennemi est dans la zone de dégâts
-    void SiDansZoneDegats();
+    void siDansZoneDegats(int x, int y, std::vector<int> VectPosTour);
 
     int Chemin{0};
     int numeroNoeudActuel{0};
@@ -32,15 +32,14 @@ struct Ennemi
     GLuint texture;
 
     float PdVEnnemi{};
-    float VitesseEnnemi{2.f};
+    float VitesseEnnemi{1.f};
     float DegatsEnnemi{};
 
     bool SiEnnemiBouge{};
     bool SiEnnemiMort{};
-    bool aNiqueLaBase{false};
+    bool aDetruitLaBase{false};
 
     void recupereTemps(const double &elapsedTime);
 
     void deplacement(std::vector<std::vector<Noeud>> &ListePlusCourtChemin, MAP &map);
-
 };

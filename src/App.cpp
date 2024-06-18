@@ -1,8 +1,6 @@
 #include "App.hpp"
 
 App::App() : _previousTime(0.0), _viewSize(1.0) {
-    // img::Image test {img::load(make_absolute_path("images/map_design2_v1.png", true), 3, true)};
-    // _texture = loadTexture(test);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -35,10 +33,11 @@ App::App() : _previousTime(0.0), _viewSize(1.0) {
     ennemis_textures[typeEnnemi::milan] = loadTexture(img::load(make_absolute_path("images/Ennemis/milan.png", true), 3, true));
 
     // Chargement des textures des tours
-    tours_textures[typeTour::archer] = loadTexture(img::load(make_absolute_path("images/Tours/TourArcher.png", true), 3, true));
-    tours_textures[typeTour::chevalier] = loadTexture(img::load(make_absolute_path("images/Tours/TourChevalier.png", true), 3, true));
-    tours_textures[typeTour::sorcier] = loadTexture(img::load(make_absolute_path("images/Tours/TourSorcier.png", true), 3, true));
+    tours_textures[typeTour::archer] = loadTexture(img::load(make_absolute_path("images/Tours/TourArcher1x1.png", true), 3, true));
+    tours_textures[typeTour::chevalier] = loadTexture(img::load(make_absolute_path("images/Tours/TourChevalier1x1.png", true), 3, true));
+    tours_textures[typeTour::sorcier] = loadTexture(img::load(make_absolute_path("images/Tours/TourSorcier1x1.png", true), 3, true));
 
+    GLuint zoneDegats = loadTexture(img::load(make_absolute_path("images/Tuiles/zoneDegats.png", true), 3, true));
 }
 
 void App::setup() {
@@ -51,32 +50,47 @@ void App::setup() {
     TextRenderer.SetColorf(SimpleText::BACKGROUND_COLOR, 0.f, 0.f, 0.f, 0.f);
     TextRenderer.EnableBlending(true);
 
-
+    // MAP
     MAP1.determineCouleursCase();
     MAP1.associeCouleurTypeCase();
     MAP1.determineTypeCase();
     MAP1.recupereNoeudsITD();
     MAP1.creationGraph();
     MAP1.plusCourtChemin();
-    // for (Noeud noeud : MAP1.ListePlusCourtChemin[1])
-    //     std::cout << noeud.numeroNoeud << " = " << noeud.position.x << " : " << noeud.position.y << std::endl;
-    // for (Case pixel : MAP1.ListeCase)
-    // {
-    //     if(pixel.EstUnNoeud)
-    //          std::cout << pixel.position.x << " : " << pixel.position.y << std::endl;
-    // }
-       
-    // ELISABETH
-    Elisabeth.texture = ennemis_textures[typeEnnemi::elisabeth];
-    Elisabeth.position= MAP1.ListePlusCourtChemin[0][0].position;
 
-    //COLIN
-    Colin.texture = ennemis_textures[typeEnnemi::colin];
-    Colin.position= MAP1.ListePlusCourtChemin[1][0].position;
-    Colin.VitesseEnnemi = 4.0f;
+    // ENNEMIS
+        // ELISABETH
+        Elisabeth.texture = ennemis_textures[typeEnnemi::elisabeth];
+        Elisabeth.position = MAP1.ListePlusCourtChemin[0][0].position;
+        Elisabeth.VitesseEnnemi = 1.5f;
+        Elisabeth.DegatsEnnemi = 15;
+        Elisabeth.PdVEnnemi = 100;
+        VectEnnemis.push_back(Elisabeth);
+        //COLIN
+        Colin.texture = ennemis_textures[typeEnnemi::colin];
+        Colin.position = MAP1.ListePlusCourtChemin[0][1].position;
+        Colin.DegatsEnnemi = 5;
+        Colin.PdVEnnemi = 50;
+        VectEnnemis.push_back(Colin);
+        // MILAN
+        Milan.texture = ennemis_textures[typeEnnemi::milan];
+        Milan.position = MAP1.ListePlusCourtChemin[0][0].position;
+        Milan.VitesseEnnemi = .8f;
+        Milan.DegatsEnnemi = 1;
+        Milan.PdVEnnemi = 200;
+        VectEnnemis.push_back(Milan);
 
-    // float randPosx, randPosy;
-    // randPosx;
+    // TOURS
+        // ARCHER
+        Archer.texture = tours_textures[typeTour::archer];
+        VectTours.push_back(Archer);
+        // CHEVALIER
+        Chevalier.texture = tours_textures[typeTour::chevalier];
+        VectTours.push_back(Chevalier);
+        // SORCIER
+        Sorcier.texture = tours_textures[typeTour::sorcier];
+        VectTours.push_back(Sorcier);
+
 }
 
 void App::update() {
@@ -84,20 +98,38 @@ void App::update() {
     const double currentTime {glfwGetTime()};
     const double elapsedTime {currentTime - _previousTime};
 
-    Elisabeth.recupereTemps(elapsedTime);
     Colin.recupereTemps(elapsedTime);
+    Elisabeth.recupereTemps(elapsedTime);
+    Milan.recupereTemps(elapsedTime);
 
     _previousTime = currentTime;
-
-    // _angle += 10.0f * elapsedTime;
-    // _angle = std::fmod(_angle, 360.0f);
     
     render();
 }
 
 void App::render() {
 
-    if(JeuStart==1) {
+    if(Jeu==0) {
+        // Clear the color and depth buffers of the frame buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        TextRenderer.SetTextSize(SimpleText::SIZE_32);
+        TextRenderer.Label("Appuyez sur la touche", _width / 2, _height / 2 - 50, SimpleText::CENTER);
+        TextRenderer.Label("S", _width / 2, _height / 2, SimpleText::CENTER);
+        TextRenderer.Label("pour jouer", _width / 2, _height / 2 + 50, SimpleText::CENTER);
+        TextRenderer.Render();
+
+    } if(Jeu==1) {
+
+        if(PdVCible<=0){
+            Jeu=2;
+        }
+        if(CompteurVagueEnnemis==4 && PdVCible>0) {
+            Jeu=3;
+        }
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -106,230 +138,193 @@ void App::render() {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        // déplacement du repère en haut à gauche
-        // glTranslatef(-1.f, 1.f, 0.f);
         MAP1.dessineMap(tiles_textures,paths_textures);
 
-        if (Elisabeth.numeroNoeudActuel != MAP1.ListePlusCourtChemin[0].size() -1)
-            Elisabeth.deplacement(MAP1.ListePlusCourtChemin,MAP1);
+        if(CompteurPlacementTour==6  && PdVCible>0 && CompteurVagueEnnemis!=4) {
+            if(CompteurVagueEnnemis%3==1) {
+                if (Milan.numeroNoeudActuel != MAP1.ListePlusCourtChemin[0].size() -1 && Milan.PdVEnnemi>0) {
+                    Milan.deplacement(MAP1.ListePlusCourtChemin,MAP1);
+                        if(Milan.position.x-(int)Milan.position.x>.5f) {
+                            xEnnemi = (int)Milan.position.x + 1;
+                        } else {xEnnemi = (int)Milan.position.x;}
+                        if(Milan.position.y-(int)Milan.position.y>.5f) {
+                            yEnnemi = (int)Milan.position.y + 1;
+                        } else {yEnnemi = (int)Milan.position.y;}
+                    Milan.siDansZoneDegats(xEnnemi,yEnnemi, VectPosTour);
 
-            
-        if (Colin.numeroNoeudActuel != MAP1.ListePlusCourtChemin[1].size() -1)
-            Colin.deplacement(MAP1.ListePlusCourtChemin,MAP1);
+                } else if(Milan.PdVEnnemi<=0) {
+                    TextRenderer.Label("un Milan sauvage est mort", _width / 50, 300, SimpleText::LEFT);
+                    TextRenderer.Render();
+                    CompteurVagueEnnemis++;
+                } else if(degatOuNonM==false) {
+                    PdVCible-=Milan.DegatsEnnemi;
+                    degatOuNonM=true;
+                    CompteurVagueEnnemis++;
+                }
+            } if(CompteurVagueEnnemis%3==2) {
+                if (Colin.numeroNoeudActuel != MAP1.ListePlusCourtChemin[0].size() -1 && Colin.PdVEnnemi>0) {
+                    Colin.deplacement(MAP1.ListePlusCourtChemin,MAP1);
+                        if(Colin.position.x-(int)Colin.position.x>.5f) {
+                            xEnnemi = (int)Colin.position.x + 1;
+                        } else {xEnnemi = (int)Colin.position.x;}
+                        if(Colin.position.y-(int)Colin.position.y>.5f) {
+                            yEnnemi = (int)Colin.position.y + 1;
+                        } else {yEnnemi = (int)Colin.position.y;}
+                    Colin.siDansZoneDegats(xEnnemi,yEnnemi, VectPosTour);
 
-        // std::vector<Case> VectCaseMap{};
-        // VectCaseMap = ChargeVectMap(&map10x10);
+                } else if(Colin.PdVEnnemi<=0) {
+                    TextRenderer.Label("un Colin sauvage est mort", _width / 50, 330, SimpleText::LEFT);
+                    TextRenderer.Render();
+                    CompteurVagueEnnemis++;
+                } else if(degatOuNonC==false) {
+                    PdVCible-=Colin.DegatsEnnemi;
+                    degatOuNonC=true;
+                    CompteurVagueEnnemis++;
+                }            
+            } if(CompteurVagueEnnemis%3==0) {
+                if (Elisabeth.numeroNoeudActuel != MAP1.ListePlusCourtChemin[0].size() -1 && Elisabeth.PdVEnnemi>0) {
+                    Elisabeth.deplacement(MAP1.ListePlusCourtChemin,MAP1);
+                        if(Elisabeth.position.x-(int)Elisabeth.position.x>.5f) {
+                            xEnnemi = (int)Elisabeth.position.x + 1;
+                        } else {xEnnemi = (int)Elisabeth.position.x;}
+                        if(Elisabeth.position.y-(int)Elisabeth.position.y>.5f) {
+                            yEnnemi = (int)Elisabeth.position.y + 1;
+                        } else {yEnnemi = (int)Elisabeth.position.y;}
+                    Elisabeth.siDansZoneDegats(xEnnemi,yEnnemi, VectPosTour);
 
-        // int posDansVectCaseMap{0};
-        // for(int i{0}; i<10; i++) {
-        //     for(int j{0}; j<10; j++) {
-        //         // rendu case 54x54
-        //         glPushMatrix();
-        //         // décalage de case (0->9)
-        //         glTranslatef(0.2f*i, -0.2f*j, 0.f);
-        //         if(VectCaseMap[posDansVectCaseMap].typeDeCase == typeCase::chemin) {
-        //             // Si la case de gauche et la case de droite sont des chemins
-        //             if(VectCaseMap[posDansVectCaseMap-10].typeDeCase == typeCase::chemin && VectCaseMap[posDansVectCaseMap+10].typeDeCase == typeCase::chemin) {
-        //                 // Si haut chemin
-        //                 if(VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin) {
-        //                         draw_quad_with_texture(tiles_textures[typeCase::chemin_T_inverse]);
-        //                 }
-        //                 // Si bas chemin
-        //                 else if(VectCaseMap[posDansVectCaseMap+1].typeDeCase == typeCase::chemin) {
-        //                         draw_quad_with_texture(tiles_textures[typeCase::chemin_T]);
-        //                 }
-        //                 else {
-        //                     draw_quad_with_texture(tiles_textures[typeCase::chemin_horizontal]);
-        //                 }
-        //             }
-        //             else if(VectCaseMap[posDansVectCaseMap-10].typeDeCase == typeCase::chemin) {
-        //                 if(VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin && VectCaseMap[posDansVectCaseMap+1].typeDeCase == typeCase::chemin) {
-        //                     draw_quad_with_texture(tiles_textures[typeCase::chemin_T_gauche]);
-        //                 }
-        //                 else if(VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin) {
-        //                     draw_quad_with_texture(tiles_textures[typeCase::chemin_haut_gauche]);
-        //                 }
-        //                 else {
-        //                     draw_quad_with_texture(tiles_textures[typeCase::chemin_gauche_bas]);
-        //                 }
-        //             }
-        //             else if(VectCaseMap[posDansVectCaseMap+10].typeDeCase == typeCase::chemin) {
-        //                 if(VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin || VectCaseMap[posDansVectCaseMap-1].typeDeCase == typeCase::chemin_depart) {
-        //                     draw_quad_with_texture(tiles_textures[typeCase::chemin_haut_droite]);
-        //                 }
-        //                 else {
-        //                     draw_quad_with_texture(tiles_textures[typeCase::chemin_droite_bas]);
-        //                 }
-        //             }
-        //             else {
-        //                 draw_quad_with_texture(tiles_textures[typeCase::chemin_vertical]);
-        //             }
-        //         }
-        //         else if(VectCaseMap[posDansVectCaseMap].typeDeCase == typeCase::nonchemin) {
-        //             int numero = (i*j)%3;
-        //             if(numero==0) {
-        //                 draw_quad_with_texture(tiles_textures[typeCase::nonchemin_1]);
-        //             }
-        //             if(numero==1) {
-        //                 draw_quad_with_texture(tiles_textures[typeCase::nonchemin_2]);
-        //             }
-        //             if(numero==2) {
-        //                 draw_quad_with_texture(tiles_textures[typeCase::nonchemin_3]);
-        //             }                
-        //         }
-        //         else {
-        //         draw_quad_with_texture(tiles_textures[VectCaseMap[posDansVectCaseMap].typeDeCase]);
-        //         }
-        //         glPopMatrix();
-        //         posDansVectCaseMap++;
-        //     }
-        // }
+                } else if(Elisabeth.PdVEnnemi<=0) {
+                    TextRenderer.Label("une Elisabeth sauvage est morte, tant mieux !", _width / 50, 360, SimpleText::LEFT);
+                    TextRenderer.Render();
+                    CompteurVagueEnnemis++;
+                } else if(degatOuNonE==false) {
+                    PdVCible-=Elisabeth.DegatsEnnemi;
+                    degatOuNonE=true;
+                    CompteurVagueEnnemis++;
+                }
+            }
+        }
+
+        // Affichage du placement des Tours
+        if(ActionPlacementTour==1 || CompteurPlacementTour>0) {
+
+            for(int i{0}; i<3; i++) {
+                if(VectTours[i].tourPlacee==true) {
+                    dessineTourCurseur(VectTours[i], VectTours[i].x, VectTours[i].y, MAP1);
+                }
+            }
+
+            if(CompteurPlacementTour==0 && VectTours[0].tourPlacee==false) {
+                dessineTourCurseur(VectTours[0], sourisX, sourisY, MAP1);
+            }
+            if (CompteurPlacementTour==2 && VectTours[1].tourPlacee==false) {
+                    dessineTourCurseur(VectTours[1], sourisX, sourisY, MAP1);  
+            }
+            if (CompteurPlacementTour==4 && VectTours[2].tourPlacee==false) {
+                    dessineTourCurseur(VectTours[2], sourisX, sourisY, MAP1);
+            }
+        }
+
+        TextRenderer.SetTextSize(SimpleText::SIZE_16);
+        std::string PdVCible_str = "Points de vie Base : " + std::to_string(PdVCible) + "/100";
+        const char *PdVCible_c_str = PdVCible_str.c_str();
+        TextRenderer.Label(PdVCible_c_str, 50, 200, SimpleText::LEFT);
+
+        std::string PdVE_str = "Points de vie Elisabeth : " + std::to_string((int)Elisabeth.PdVEnnemi);
+        const char *PdVE_c_str = PdVE_str.c_str();
+        TextRenderer.Label(PdVE_c_str, 50, 220, SimpleText::LEFT);
+
+        std::string PdVC_str = "Points de vie Colin : " + std::to_string((int)Colin.PdVEnnemi);
+        const char *PdVC_c_str = PdVC_str.c_str();
+        TextRenderer.Label(PdVC_c_str, 50, 240, SimpleText::LEFT);
+
+        std::string PdVM_str = "Points de vie Milan : " + std::to_string((int)Milan.PdVEnnemi);
+        const char *PdVM_c_str = PdVM_str.c_str();
+        TextRenderer.Label(PdVM_c_str, 50, 260, SimpleText::LEFT);
 
         TextRenderer.Label("Jolie map tavu", _width / 2, 20, SimpleText::CENTER);
         TextRenderer.Label("Appuyez sur la touche T", _width / 50, 100, SimpleText::LEFT);
         TextRenderer.Label("pour placer les 3 Tours", _width / 50, 115, SimpleText::LEFT);
-        TextRenderer.Label("Appuyez sur la touche Y", _width / 50, 140, SimpleText::LEFT);
-        TextRenderer.Label("pour voir les zones de dommages des Tours", _width / 50, 155, SimpleText::LEFT);
-
-        // Without set precision
-        // const std::string angle_label_text { "Angle: " + std::to_string(_angle) };
-        // With c++20 you can use std::format
-        // const std::string angle_label_text { std::format("Angle: {:.2f}", _angle) };
-
-        // Using stringstream to format the string with fixed precision
-        // std::string angle_label_text {};
-        // std::stringstream stream {};
-        // stream << std::fixed << "Angle: " << std::setprecision(2) << _angle;
-        // angle_label_text = stream.str();
-
-        // TextRenderer.Label(angle_label_text.c_str(), _width / 2, _height - 4, SimpleText::CENTER);
 
         TextRenderer.Render();
 
-
-        // cursor_position_callback - Affichage placement des Tours
-        // const float aspectRatio { _width / (float) _height };
-
-        // xposTourVerif = ((float)xposCursor-(((float)_width-_height)/2))*(1080.f/_height);
-        // yposTourVerif = yposCursor*(1080.f/_height);
-
-        // if(ActionPlacementTour==1 && CompteurPlacementTour!=6) {
-        //     // std::cout << " Compteur Placement Tour = " << CompteurPlacementTour << std::endl;
-        //     glPushMatrix();
-        //         glTranslatef((float)xposTourVerif/540, -(float)yposTourVerif/540, 0.f);
-        //         if(CompteurPlacementTour==0) {
-        //             draw_quad_with_tower(tours_textures[typeTour::archer]);
-        //             if(ZoneDegatTour==1) {
-        //                 dessineZoneDegats(1.f,0.f,1.f);
-        //             }
-        //         }
-        //         if(CompteurPlacementTour==2) {
-        //             draw_quad_with_tower(tours_textures[typeTour::chevalier]);
-        //             if(ZoneDegatTour==1) {
-        //                 dessineZoneDegats(1.f,0.f,1.f);
-        //             }
-        //         } 
-        //         if(CompteurPlacementTour==4) {
-        //             draw_quad_with_tower(tours_textures[typeTour::sorcier]);
-        //             if(ZoneDegatTour==1) {
-        //                 dessineZoneDegats(1.f,0.f,1.f);
-        //             }
-        //         }
-        //     glPopMatrix();
-        // }
-
-        // // mouse_button_callback - Affichage courant des Tours
-        // if(CompteurPlacementTour>=1) {
-        //     glPushMatrix();
-        //         xposTour1 = calibrageTour(xposTour1);
-        //         yposTour1 = calibrageTour(yposTour1);
-        //         glTranslatef((float)xposTour1/540, -(float)yposTour1/540, 0.f);
-        //         draw_quad_with_tower(tours_textures[typeTour::archer]);
-        //         if(ZoneDegatTour==1) {
-        //             dessineZoneDegats(1.f,0.f,1.f);
-        //         }
-        //     glPopMatrix();
-        // }
-        // if(CompteurPlacementTour>=3) {
-        //     glPushMatrix();
-        //         xposTour2 = calibrageTour(xposTour2);
-        //         yposTour2 = calibrageTour(yposTour2);
-        //         glTranslatef((float)xposTour2/540, -(float)yposTour2/540, 0.f);
-        //         draw_quad_with_tower(tours_textures[typeTour::chevalier]);
-        //         if(ZoneDegatTour==1) {
-        //             dessineZoneDegats(1.f,0.f,1.f);
-        //         }
-        //     glPopMatrix();
-        // }
-        // if(CompteurPlacementTour>=5) {
-        //     glPushMatrix();
-        //         xposTour3 = calibrageTour(xposTour3);
-        //         yposTour3 = calibrageTour(yposTour3);
-        //         glTranslatef((float)xposTour3/540, -(float)yposTour3/540, 0.f);
-        //         draw_quad_with_tower(tours_textures[typeTour::sorcier]);
-        //         if(ZoneDegatTour==1) {
-        //             dessineZoneDegats(1.f,0.f,1.f);
-        //         }
-        //     glPopMatrix();
-        // }
-
-    } else {
+    } if(Jeu==2) {
         // Clear the color and depth buffers of the frame buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
-        TextRenderer.Label("Appuyez sur la touche", _width / 2, _height / 2 - 50, SimpleText::CENTER);
-        TextRenderer.Label("S", _width / 2, _height / 2, SimpleText::CENTER);
-        TextRenderer.Label("pour jouer", _width / 2, _height / 2 + 50, SimpleText::CENTER);
-        TextRenderer.Render();
-    }
+        TextRenderer.SetTextSize(SimpleText::SIZE_32);
+        TextRenderer.Label("JEU TROP BIEN", _width / 2, _height / 2 - 25, SimpleText::CENTER);
+        TextRenderer.SetTextSize(SimpleText::SIZE_64);
+        TextRenderer.Label(" PERDU", _width / 2, _height / 2 + 25, SimpleText::CENTER);
+        TextRenderer.Render(); 
+    } if(Jeu==3) {
+        // Clear the color and depth buffers of the frame buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        TextRenderer.SetTextSize(SimpleText::SIZE_32);
+        TextRenderer.Label("JEU TROP BIEN", _width / 2, _height / 2 - 25, SimpleText::CENTER);
+        TextRenderer.SetTextSize(SimpleText::SIZE_64);
+        TextRenderer.Label("REUSSI", _width / 2, _height / 2 + 25, SimpleText::CENTER);
+        TextRenderer.Render(); 
+    } 
 }
 
 void App::key_callback(int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_S && action == GLFW_PRESS)
-	    if(JeuStart == 0) {
-			JeuStart = 1;
+	    if(Jeu == 0) {
+			Jeu = 1;
         }
-	if (key == GLFW_KEY_T && action == GLFW_PRESS)
-		if(ActionPlacementTour == 0) {
-			ActionPlacementTour = 1;
-        } else {
-            ActionPlacementTour = 0;
-        }
-	if (key == GLFW_KEY_Y && action == GLFW_PRESS)
-		if(ZoneDegatTour == 0) {
-			ZoneDegatTour = 1;
-        } else {
-            ZoneDegatTour = 0;
-        }
+    if(CompteurPlacementTour!=4) {
+        if (key == GLFW_KEY_T && action == GLFW_PRESS)
+            if(ActionPlacementTour == 0) {
+                ActionPlacementTour = 1;
+            } else {
+                ActionPlacementTour = 0;
+            }
+    }
 }
 
 void App::mouse_button_callback(int button, int action, int mods) {
 
+    if (determineSiCaseTourClique(sourisX,sourisY, MAP1) == true) {
+        xposTour = sourisX;
+        yposTour = sourisY;
 
-
-    // std::vector<Case> VectPixelMap{};
-    // VectPixelMap = VerifPlacementTourVectMap(&map1080x1080);
-    // // std::cout << " Composante R du pixel = " << VectPixelMap[(xposTourVerif*1080)+yposTourVerif].R << std::endl;
-    
-    // if(VectPixelMap[(xposTourVerif*1080)+yposTourVerif].G!=0 && VectPixelMap[(xposTourVerif*1080)+yposTourVerif].R!=255 && ActionPlacementTour==1) {
-    //     if(CompteurPlacementTour<7) {
-    //         CompteurPlacementTour++;
-    //         if(CompteurPlacementTour==1) {
-    //             xposTour1 = xposTourVerif;
-    //             yposTour1 = yposTourVerif;
-    //         }
-    //         if(CompteurPlacementTour==3) {
-    //             xposTour2 = xposTourVerif;
-    //             yposTour2 = yposTourVerif;
-    //         }
-    //         if(CompteurPlacementTour==5) {
-    //             xposTour3 = xposTourVerif;
-    //             yposTour3 = yposTourVerif;
-    //         }
-    //     }
-    // }
+        if(CompteurPlacementTour==0) {
+            std::cout << CompteurPlacementTour << std::endl;
+            VectTours[CompteurPlacementTour].x = sourisX;
+            VectPosTour.push_back(sourisX);
+            VectTours[CompteurPlacementTour].y = sourisY;
+            VectPosTour.push_back(sourisY);
+            VectTours[CompteurPlacementTour].tourPlacee = true;
+            CompteurPlacementTour+=2;
+        } else if(CompteurPlacementTour==2) {
+            if(VectTours[(CompteurPlacementTour/2)-1].x!=sourisX && VectTours[(CompteurPlacementTour/2)-1].y!=sourisY) {
+                VectTours[1].x = sourisX;
+                VectPosTour.push_back(sourisX);
+                VectTours[1].y = sourisY;
+                VectPosTour.push_back(sourisY);
+                VectTours[1].tourPlacee = true;
+                std::cout << CompteurPlacementTour << std::endl;
+                CompteurPlacementTour+=2;
+                std::cout << CompteurPlacementTour << std::endl;
+            }
+        } else if(CompteurPlacementTour==4) {
+            if(VectTours[1].x!=sourisX && VectTours[1].y!=sourisY) {
+                if(VectTours[0].x!=sourisX && VectTours[0].y!=sourisY) {
+                    VectTours[CompteurPlacementTour/2].x = sourisX;
+                    VectPosTour.push_back(sourisX);
+                    VectTours[CompteurPlacementTour/2].y = sourisY;
+                    VectPosTour.push_back(sourisY);
+                    VectTours[CompteurPlacementTour/2].tourPlacee = true;
+                    CompteurPlacementTour+=2;
+                }
+            }
+        }
+    }
 }
 
 void App::scroll_callback(double /*xoffset*/, double /*yoffset*/) {
@@ -346,7 +341,6 @@ void App::cursor_position_callback(double xpos, double ypos) {
 
     sourisX = (normalizedX * 0.5 * _viewSize + MAP1.semiTailleMap) * MAP1.nombreDePixelEnLigne;
     sourisY = (normalizedY * 0.5 * _viewSize + MAP1.semiTailleMap) * MAP1.nombreDePixelEnLigne;
-    // std::cout << sourisX << "       " << sourisY << std::endl;
 
 }
 
@@ -370,8 +364,15 @@ void App::size_callback(int width, int height) {
     }
 }
 
+void App::dessineTourCurseur(Tour tour, int x, int y, MAP &Map) {
+    draw_quad_with_texture(x, y, tour.texture, Map);
+}
 
-
-
-
-// Autres fonctions
+bool App::determineSiCaseTourClique(int x, int y, MAP &Map) {
+    if((!((x<0 && y==0)||(x>=10 && y==9))) && y<10) {
+        int numeroCase = x+(y*((int)Map.nombreDePixelEnLigne));
+        if(Map.ListeCase[numeroCase].typeDeCase == typeCase::emplacement_tour) {
+            return true;
+        }
+    }
+}

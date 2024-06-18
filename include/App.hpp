@@ -44,28 +44,44 @@ struct App {
 
     SimpleText TextRenderer {};
 
+
 // Partie MAP
 
     MAP MAP1;
-    Ennemi Elisabeth;
-    Ennemi Colin;
-
-    bool JeuStart{0};
-
+    int Jeu{0};
     // uMap map
     std::unordered_map<typeCase, GLuint> tiles_textures {};
     std::unordered_map<typeChemin, GLuint> paths_textures {};
-    img::Image map1080x1080 {img::load(make_absolute_path("images/Tuiles/map_design2_v2.png", true), 3, false)};
 
 
 // Partie ENNEMIS
 
     // uMap ennemis
     std::unordered_map<typeEnnemi, GLuint> ennemis_textures {};
+    // Ennemis
+    Ennemi Elisabeth;
+    Ennemi Colin;
+    Ennemi Milan;
+
+    bool degatOuNonE{false};
+    bool degatOuNonC{false};
+    bool degatOuNonM{false};
+
+    int CompteurVagueEnnemis{1};
 
 // Partie TOURS
 
+    // uMap Tours
     std::unordered_map<typeTour, GLuint> tours_textures {};
+
+    Tour Archer;
+    Tour Chevalier;
+    Tour Sorcier;
+
+    std::vector<Tour> VectTours {};
+
+    void dessineTourCurseur(Tour tour, int x, int y, MAP &Map);
+    bool determineSiCaseTourClique(int x, int y, MAP &Map);
 
     // Enclenche le placement des tours si égale à 1
     bool ActionPlacementTour{0};
@@ -77,18 +93,15 @@ struct App {
     int sourisX{};
     int sourisY{};
 
-    // Coordonnées Tour 1
-    int xposTour1{};
-    int yposTour1{};
+    // Coordonnées Tour
+    int xposTour{};
+    int yposTour{};
+    std::vector<int> VectPosTour{};
+    std::vector<Ennemi> VectEnnemis{};
+    std::vector<int> VectVagueEnnemis = {0,0,1,1,0,1,1,1,0,0,2};
 
-    // Coordonnées Tour 2
-    int xposTour2{};
-    int yposTour2{};
+    int PdVCible{100};
 
-    // Coordonnées Tour 3
-    int xposTour3{};
-    int yposTour3{};
-
-    bool ZoneDegatTour{0};
-
+    int xEnnemi{0};
+    int yEnnemi{0};
 };

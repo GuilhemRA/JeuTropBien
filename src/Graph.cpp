@@ -50,7 +50,6 @@ namespace Graph
         queue.push(current);
         while (!queue.empty())
         {
-            std::cout << queue.front() << std::endl;
             current = queue.front();
             queue.pop();
             for (auto tos : this->adjacency_list.at(current))
